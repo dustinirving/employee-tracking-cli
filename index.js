@@ -74,11 +74,11 @@ async function getRoles() {
 
 async function getDepartments() {
   const [departmentsData] = await connection.query(
-    `SELECT department FROM department`
+    `SELECT name FROM department`
   );
   const departments = [];
   departmentsData.forEach((element) => {
-    departments.push(element.department);
+    departments.push(element.name);
   });
   return departments;
 }
@@ -113,7 +113,7 @@ async function getDepartmentId(department) {
   const [departmentIdData] = await connection.query(
     "SELECT id FROM department WHERE ?",
     {
-      department: department,
+      name: department,
     }
   );
   return departmentIdData[0].id;
@@ -126,8 +126,10 @@ async function prompt() {
       await viewEmployees();
       break;
     case "View all Employees By Department":
+      await viewEmployeesByDepartment();
       break;
     case "View all Employees By Manager":
+      await viewEmployeesByManager();
       break;
     case "Add Employee":
       await addEmployee();
@@ -167,19 +169,59 @@ async function prompt() {
 async function viewEmployees() {
   const [
     rows,
-  ] = await connection.query(`SELECT employee.id, first_name, last_name, title, department, salary, manager_id
-  FROM employee
-  INNER JOIN role ON employee.role_id = role.id
-  INNER JOIN department ON role.department_id = department.id;`);
+  ] = await connection.query(`SELECT E1.id, E1.first_name, E1.last_name, title, name AS department, salary, CONCAT( E2.first_name, ' ', E2.last_name) as manager
+  FROM employee AS E1
+  INNER JOIN role ON E1.role_id = role.id
+  INNER JOIN department ON role.department_id = department.id
+  LEFT JOIN employee AS E2 ON E2.id = E1.manager_id`);
   console.table(rows);
   await prompt();
 }
 
 async function viewEmployeesByDepartment() {
-  const [rows] = await connection.query;
+  const departments = await getDepartments();
+  const answer = await inquirer.prompt({
+    name: "department",
+    message: "Which department would you like to view?",
+    type: "list",
+    choices: departments,
+  });
+  const departmentId = await getDepartmentId(answer.department);
+  const [rows] = await connection.query(
+    `SELECT name AS department, title, E1.first_name, E1.last_name, salary, CONCAT( E2.first_name, ' ', E2.last_name) as manager
+  FROM employee AS E1
+  INNER JOIN role ON E1.role_id = role.id
+  INNER JOIN department ON role.department_id = department.id
+  LEFT JOIN employee AS E2 ON E2.id = E1.manager_id
+  WHERE ?`,
+    {
+      department_id: departmentId,
+    }
+  );
+  console.table(rows);
+  await prompt();
 }
 
-async function viewEmployeesByManager() {}
+async function viewEmployeesByManager() {
+  const managers = await getNames();
+  const answer = await inquirer.prompt({
+    name: "manager",
+    message: "Which manager's employees do you want to view?",
+    type: "list",
+    choices: managers,
+  });
+  const employeeId = await getEmployeeId(answer.manager);
+  const [rows] = await connection.query(
+    `SELECT  CONCAT( E2.first_name, ' ', E2.last_name) as manager, name AS department, title, E1.first_name, E1.last_name, salary
+  FROM employee AS E1
+  INNER JOIN role ON E1.role_id = role.id
+  INNER JOIN department ON role.department_id = department.id
+  LEFT JOIN employee AS E2 ON E2.id = E1.manager_id
+  WHERE E1.manager_id = ${employeeId}`
+  );
+  console.table(rows);
+  await prompt();
+}
 
 async function addEmployee() {
   const names = await getNames();
@@ -346,7 +388,7 @@ async function removeRole() {
   await prompt();
 }
 async function viewDepartments() {
-  const [rows] = await connection.query(`SELECT department FROM department`);
+  const [rows] = await connection.query(`SELECT name FROM department`);
   console.table(rows);
   await prompt();
 }
@@ -356,7 +398,7 @@ async function addDepartment() {
     message: "What is the name of the new department?",
   });
   const [results] = await connection.query("INSERT INTO department SET ?", {
-    department: answer.newDepartment,
+    name: answer.newDepartment,
   });
   await prompt();
 }
