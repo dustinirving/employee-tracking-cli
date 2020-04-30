@@ -187,6 +187,7 @@ async function viewEmployeesByManager() {
 // The data is stored in the mysql database
 async function addEmployee() {
   const names = await getData.getNames();
+  names.unshift("None");
   const roles = await getData.getRoles();
 
   const answer = await inquirer.prompt([

@@ -26,21 +26,21 @@ CREATE TABLE department (
 );
 
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES ('John', 'Doe', 1, 3);
+VALUES ('Tate', 'Bell', 1, 3);
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES ('Mike', 'Chan', 2, 1);
+VALUES ('Zakariya', 'Connolly', 2, 1);
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES ('Ashley', 'Rodriguez', 3, null);
+VALUES ('Laylah', 'Klein', 3, null);
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES ('Kevin', 'Tupik', 4, 3);
+VALUES ('Benn', 'Valentine', 4, 3);
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES ('Malia', 'Brown', 5, null);
+VALUES ('Lorraine', 'Lister', 5, null);
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES ('Sarah', 'Lourd', 6, null);
+VALUES ('Steffan', 'Hail', 6, null);
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES ('Tom', 'Allen', 7, 6);
+VALUES ('Elowen', 'Atkinson', 7, 6);
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES ('Christian', 'Eckenrode', 3, 2);
+VALUES ('Richard', 'Petty', 3, 2);
 
 
 INSERT INTO role (title, salary, department_id)
@@ -66,6 +66,7 @@ INSERT INTO department (name)
 VALUES ('Finance');
 INSERT INTO department (name)
 VALUES ('Legal');
+
 
 
 

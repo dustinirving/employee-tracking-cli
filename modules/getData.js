@@ -4,7 +4,7 @@ async function getNames() {
   const [namesData] = await connection.query(
     `SELECT first_name, last_name FROM employee`
   );
-  const names = ["None"];
+  const names = [];
   namesData.forEach((element) => {
     let name = `${element.first_name} ${element.last_name}`;
     names.push(name);

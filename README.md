@@ -8,6 +8,30 @@ node index.js
 
 The user can select from a variety different options to add or remove employees, roles, and departments. They can also view all employees, employees by department, employees by manager, roles, departments, a total utilized budget for a particular department as well as update an employee's role or manager. It uses MYSQL to store the data.
 
+### View Employees
+
+![View](gifs/view.gif)
+
+### Adding and Removing Employees
+
+![Employee](gifs/employee.gif)
+
+### Update Employees Role and Manager
+
+![Update](gifs/update.gif)
+
+### Add and Delete Roles
+
+![Role](gifs/role.gif)
+
+### Add and Delete Departments
+
+![Department](gifs/department.gif)
+
+### View the Utilized Budget and Exit
+
+![Budget](gifs/budget.gif)
+
 ## Table of Contents
 
 1. [Installation](#Installation)
