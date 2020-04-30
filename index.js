@@ -1,8 +1,30 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql2/promise");
 const cTable = require("console.table");
+const getData = require("./getData.js");
 
-let connection;
+const starterQuestion = {
+  name: "action",
+  type: "list",
+  message: "What would you like to do?",
+  choices: [
+    "Exit",
+    "View all Employees",
+    "View all Employees By Department",
+    "View all Employees By Manager",
+    "Add Employee",
+    "Remove Employee",
+    "Update Employee Role",
+    "Update Employee Manager",
+    "View all Roles",
+    "Add a Role",
+    "Remove a Role",
+    "View all Departments",
+    "Add a Department",
+    "Remove a Department",
+    "View the Total Utilized Budget of a Department",
+  ],
+};
 
 main();
 
@@ -28,99 +50,11 @@ async function connect() {
   console.log("connected as id " + connection.threadId);
 }
 
-let starterQuestion = {
-  name: "action",
-  type: "list",
-  message: "What would you like to do?",
-  choices: [
-    "View all Employees",
-    "View all Employees By Department",
-    "View all Employees By Manager",
-    "Add Employee",
-    "Remove Employee",
-    "Update Employee Role",
-    "Update Employee Manager",
-    "View all Roles",
-    "Add a Role",
-    "Remove a Role",
-    "View all Departments",
-    "Add a Department",
-    "Remove a Department",
-    "View the Total Utilized Budget of a Department",
-  ],
-};
-
-async function getNames() {
-  const [namesData] = await connection.query(
-    `SELECT first_name, last_name FROM employee`
-  );
-  const names = ["None"];
-  namesData.forEach((element) => {
-    let name = `${element.first_name} ${element.last_name}`;
-    names.push(name);
-  });
-  return names;
-}
-
-async function getRoles() {
-  const [rolesData] = await connection.query(`SELECT title FROM role`);
-  const roles = [];
-  rolesData.forEach((element) => {
-    roles.push(element.title);
-  });
-  return roles;
-}
-
-async function getDepartments() {
-  const [departmentsData] = await connection.query(
-    `SELECT name FROM department`
-  );
-  const departments = [];
-  departmentsData.forEach((element) => {
-    departments.push(element.name);
-  });
-  return departments;
-}
-
-async function getEmployeeId(name) {
-  const splitName = name.split(" ");
-  const firstName = splitName[0];
-  const lastName = splitName[1];
-
-  const [employeeIdData] = await connection.query(
-    "SELECT id FROM employee WHERE ? AND ?",
-    [
-      {
-        first_name: firstName,
-      },
-      {
-        last_name: lastName,
-      },
-    ]
-  );
-  return employeeIdData[0].id;
-}
-
-async function getRoleId(role) {
-  const [roleIdData] = await connection.query("SELECT id FROM role WHERE ?", {
-    title: role,
-  });
-  return roleIdData[0].id;
-}
-
-async function getDepartmentId(department) {
-  const [departmentIdData] = await connection.query(
-    "SELECT id FROM department WHERE ?",
-    {
-      name: department,
-    }
-  );
-  return departmentIdData[0].id;
-}
-
 async function prompt() {
   const answer = await inquirer.prompt(starterQuestion);
   switch (answer.action) {
+    case "Exit":
+      break;
     case "View all Employees":
       await viewEmployees();
       break;
@@ -179,16 +113,16 @@ async function viewEmployees() {
 }
 
 async function viewEmployeesByDepartment() {
-  const departments = await getDepartments();
+  const departments = await getData.getDepartments();
   const answer = await inquirer.prompt({
     name: "department",
     message: "Which department would you like to view?",
     type: "list",
     choices: departments,
   });
-  const departmentId = await getDepartmentId(answer.department);
+  const departmentId = await getData.getDepartmentId(answer.department);
   const [rows] = await connection.query(
-    `SELECT name AS department, title, E1.first_name, E1.last_name, salary, CONCAT( E2.first_name, ' ', E2.last_name) as manager
+    `SELECT CONCAT(E1.first_name, ' ', E1.last_name) as employee, title, salary, CONCAT( E2.first_name, ' ', E2.last_name) as manager
   FROM employee AS E1
   INNER JOIN role ON E1.role_id = role.id
   INNER JOIN department ON role.department_id = department.id
@@ -203,16 +137,16 @@ async function viewEmployeesByDepartment() {
 }
 
 async function viewEmployeesByManager() {
-  const managers = await getNames();
+  const managers = await getData.getNames();
   const answer = await inquirer.prompt({
     name: "manager",
     message: "Which manager's employees do you want to view?",
     type: "list",
     choices: managers,
   });
-  const employeeId = await getEmployeeId(answer.manager);
+  const employeeId = await getData.getEmployeeId(answer.manager);
   const [rows] = await connection.query(
-    `SELECT  CONCAT( E2.first_name, ' ', E2.last_name) as manager, name AS department, title, E1.first_name, E1.last_name, salary
+    `SELECT  CONCAT( E1.first_name, ' ', E1.last_name) as employee, name AS department, title, salary
   FROM employee AS E1
   INNER JOIN role ON E1.role_id = role.id
   INNER JOIN department ON role.department_id = department.id
@@ -224,8 +158,8 @@ async function viewEmployeesByManager() {
 }
 
 async function addEmployee() {
-  const names = await getNames();
-  const roles = await getRoles();
+  const names = await getData.getNames();
+  const roles = await getData.getRoles();
 
   const answer = await inquirer.prompt([
     {
@@ -250,8 +184,8 @@ async function addEmployee() {
     },
   ]);
 
-  const employeeId = await getEmployeeId(answer.employee);
-  const roleId = await getRoleId(answer.role);
+  const employeeId = await getData.getEmployeeId(answer.employee);
+  const roleId = await getData.getRoleId(answer.role);
 
   const [results] = await connection.query("INSERT INTO employee SET ?", {
     first_name: answer.firstName,
@@ -263,14 +197,14 @@ async function addEmployee() {
 }
 
 async function removeEmployee() {
-  const names = await getNames();
+  const names = await getData.getNames();
   const answer = await inquirer.prompt({
     name: "employee",
     message: "Which employee do you want to remove?",
     type: "list",
     choices: names,
   });
-  const employeeId = await getEmployeeId(answer.employee);
+  const employeeId = await getData.getEmployeeId(answer.employee);
 
   const [results] = await connection.query("DELETE FROM employee WHERE ?", {
     id: employeeId,
@@ -279,8 +213,8 @@ async function removeEmployee() {
 }
 
 async function updateEmployeeRole() {
-  const names = await getNames();
-  const roles = await getRoles();
+  const names = await getData.getNames();
+  const roles = await getData.getRoles();
   const answer = await inquirer.prompt([
     {
       name: "employee",
@@ -295,8 +229,8 @@ async function updateEmployeeRole() {
       choices: roles,
     },
   ]);
-  const roleId = await getRoleId(answer.role);
-  const employeeId = await getEmployeeId(answer.employee);
+  const roleId = await getData.getRoleId(answer.role);
+  const employeeId = await getData.getEmployeeId(answer.employee);
 
   const [results] = await connection.query(`UPDATE employee SET ? WHERE ?`, [
     {
@@ -310,7 +244,7 @@ async function updateEmployeeRole() {
 }
 
 async function updateEmployeeManager() {
-  const names = await getNames();
+  const names = await getData.getNames();
 
   const answer = await inquirer.prompt([
     {
@@ -326,8 +260,8 @@ async function updateEmployeeManager() {
       choices: names,
     },
   ]);
-  const employeeId = await getEmployeeId(answer.employee);
-  const managerId = await getEmployeeId(answer.manager);
+  const employeeId = await getData.getEmployeeId(answer.employee);
+  const managerId = await getData.getEmployeeId(answer.manager);
 
   const [results] = await connection.query(`UPDATE employee SET ? WHERE ?`, [
     {
@@ -341,13 +275,13 @@ async function updateEmployeeManager() {
 }
 
 async function viewRoles() {
-  const [rows] = await connection.query(`SELECT title FROM role`);
+  const [rows] = await connection.query(`SELECT title AS roles FROM role`);
   console.table(rows);
   await prompt();
 }
 
 async function addRole() {
-  const departments = await getDepartments();
+  const departments = await getData.getDepartments();
   const answer = await inquirer.prompt([
     {
       name: "newRole",
@@ -364,7 +298,7 @@ async function addRole() {
       choices: departments,
     },
   ]);
-  const departmentId = await getDepartmentId(answer.department);
+  const departmentId = await getData.getDepartmentId(answer.department);
 
   const [results] = await connection.query("INSERT INTO role SET ?", {
     title: answer.newRole,
@@ -375,14 +309,14 @@ async function addRole() {
 }
 
 async function removeRole() {
-  const roles = await getRoles();
+  const roles = await getData.getRoles();
   const answer = await inquirer.prompt({
     name: "role",
     message: "Which role do you want to remove?",
     type: "list",
     choices: roles,
   });
-  const roleId = await getRoleId(answer.role);
+  const roleId = await getData.getRoleId(answer.role);
 
   const [results] = await connection.query("DELETE FROM role WHERE ?", {
     id: roleId,
@@ -391,7 +325,9 @@ async function removeRole() {
 }
 
 async function viewDepartments() {
-  const [rows] = await connection.query(`SELECT name FROM department`);
+  const [rows] = await connection.query(
+    `SELECT name AS departments FROM department`
+  );
   console.table(rows);
   await prompt();
 }
@@ -408,14 +344,14 @@ async function addDepartment() {
 }
 
 async function removeDepartment() {
-  const departments = await getDepartments();
+  const departments = await getData.getDepartments();
   const answer = await inquirer.prompt({
     name: "department",
     message: "Which department do you want to remove?",
     type: "list",
     choices: departments,
   });
-  const departmentId = await getDepartmentId(answer.department);
+  const departmentId = await getData.getDepartmentId(answer.department);
   const [results] = await connection.query("DELETE FROM department WHERE ?", {
     id: departmentId,
   });
@@ -423,14 +359,14 @@ async function removeDepartment() {
 }
 
 async function utilizedBudget() {
-  const departments = await getDepartments();
+  const departments = await getData.getDepartments();
   const answer = await inquirer.prompt({
     name: "department",
     message: "Which department's utilized budget would you like to view?",
     type: "list",
     choices: departments,
   });
-  const departmentId = await getDepartmentId(answer.department);
+  const departmentId = await getData.getDepartmentId(answer.department);
   const [employeeSalaries] = await connection.query(
     `SELECT salary FROM role WHERE?`,
     {
@@ -445,4 +381,5 @@ async function utilizedBudget() {
     { department: answer.department, total_utilized_budget: sum },
   ];
   console.table(budgetArray);
+  await prompt();
 }

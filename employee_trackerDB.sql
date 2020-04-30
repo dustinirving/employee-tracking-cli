@@ -68,9 +68,16 @@ VALUES ('Finance');
 INSERT INTO department (department)
 VALUES ('Legal');
 
-SELECT employee.id, first_name, last_name, title, department, salary, manager_id
-FROM employee
-INNER JOIN role ON employee.role_id = role.id
-INNER JOIN department ON role.department_id = department.id;
+SELECT E2.id, E2.first_name, E2.last_name, title, department, salary, CONCAT_WS(' ', E1.first_name, E1.last_name)
+FROM employee AS E2
+INNER JOIN role ON E2.role_id = role.id
+INNER JOIN department ON role.department_id = department.id
+LEFT JOIN employee AS E1 ON E1.id = E2.manager_id;
+
+-- SELECT E2.id, E2.first_name, E2.last_name, CONCAT_WS(' ', E1.first_name, E1.last_name) AS manager
+-- FROM employee AS E2
+-- LEFT JOIN employee AS E1 ON E1.id = E2.manager_id;
+
+
 
         
