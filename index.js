@@ -44,7 +44,6 @@ let starterQuestion = {
     "Add a Role",
     "Remove a Role",
     "View all Departments",
-    "View utilized Budget",
     "Add a Department",
     "Remove a Department",
     "View the Total Utilized Budget of a Department",
@@ -162,6 +161,7 @@ async function prompt() {
       await removeDepartment();
       break;
     case "View the Total Utilized Budget of a Department":
+      await utilizedBudget();
       break;
   }
 }
@@ -339,6 +339,7 @@ async function updateEmployeeManager() {
   ]);
   await prompt();
 }
+
 async function viewRoles() {
   const [rows] = await connection.query(`SELECT title FROM role`);
   console.table(rows);
@@ -372,6 +373,7 @@ async function addRole() {
   });
   await prompt();
 }
+
 async function removeRole() {
   const roles = await getRoles();
   const answer = await inquirer.prompt({
@@ -387,11 +389,13 @@ async function removeRole() {
   });
   await prompt();
 }
+
 async function viewDepartments() {
   const [rows] = await connection.query(`SELECT name FROM department`);
   console.table(rows);
   await prompt();
 }
+
 async function addDepartment() {
   const answer = await inquirer.prompt({
     name: "newDepartment",
@@ -402,6 +406,7 @@ async function addDepartment() {
   });
   await prompt();
 }
+
 async function removeDepartment() {
   const departments = await getDepartments();
   const answer = await inquirer.prompt({
@@ -415,4 +420,29 @@ async function removeDepartment() {
     id: departmentId,
   });
   await prompt();
+}
+
+async function utilizedBudget() {
+  const departments = await getDepartments();
+  const answer = await inquirer.prompt({
+    name: "department",
+    message: "Which department's utilized budget would you like to view?",
+    type: "list",
+    choices: departments,
+  });
+  const departmentId = await getDepartmentId(answer.department);
+  const [employeeSalaries] = await connection.query(
+    `SELECT salary FROM role WHERE?`,
+    {
+      department_id: departmentId,
+    }
+  );
+  let sum = 0;
+  employeeSalaries.forEach((item) => {
+    sum += parseInt(item.salary);
+  });
+  let budgetArray = [
+    { department: answer.department, total_utilized_budget: sum },
+  ];
+  console.table(budgetArray);
 }
