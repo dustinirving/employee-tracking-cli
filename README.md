@@ -1,5 +1,7 @@
 # Employee Tracking CLI
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 This is a command line application that allows the user to manage employees, roles and departments. It is invoked by:
 
 ```sh
