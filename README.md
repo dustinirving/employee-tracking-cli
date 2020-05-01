@@ -18,7 +18,7 @@ The user can select from a variety different options to add or remove employees,
 
 ![Employee](gifs/employee.gif)
 
-### Update Employees Role and Manager
+### Update the Employee's Role and their Manager
 
 ![Update](gifs/update.gif)
 
@@ -33,6 +33,10 @@ The user can select from a variety different options to add or remove employees,
 ### View the Utilized Budget and Exit
 
 ![Budget](gifs/budget.gif)
+
+### Full Screencast Recording
+
+https://www.screencast.com/t/cfchlShSZ
 
 ## Table of Contents
 
@@ -59,8 +63,6 @@ node index.js
 
 2. Choose from a variety of different options
 3. Follow the instructions and answer the questions
-
-![Gif](gifs/readme.gif)
 
 ## License & Copyright
 
