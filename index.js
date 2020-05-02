@@ -2,6 +2,7 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql2/promise");
 const cTable = require("console.table");
+require("dotenv").config();
 
 // Get access to getData functions module
 const getData = require("./modules/getData.js");
@@ -53,7 +54,7 @@ async function connect() {
     host: "localhost",
     port: 3306,
     user: "root",
-    password: "hyeonmi91",
+    password: process.env.password,
     database: "employee_trackerDB",
   });
   console.log("connected as id " + connection.threadId);
